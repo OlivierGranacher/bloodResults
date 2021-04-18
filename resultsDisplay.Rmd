@@ -1,0 +1,75 @@
+---
+title: "Blood Results"
+author: "OG"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: tactile
+    highlight: github
+---
+
+```{r setup, echo=F, warning=F, message=F}
+knitr::opts_chunk$set(echo = F, eval = T, message = F, warning = F, include = F)
+library(googlesheets4)
+library(tidyverse, quietly = T)
+library(lubridate, quietly = T)
+# Vars to plot
+vars <- c("ldl_mmol_l",
+          "hdl_mmol_l",
+          "tg_mmol_l") 
+# Color for each variable
+varsColors <- c("indianred3",
+                "darkred",
+                "indianred")
+# Limits for vars
+varsLim <- c(3,
+             1,
+             2)
+# vars Titles
+varsTitle <- c("LDL en mmol/l",
+               "HDL en mmol/l",
+               "TG en mmol/l")
+# Events
+dEvents <- tribble( ~ date, ~ event,
+                   as_datetime(ymd("2017-04-01")), "Début Keto",
+                   as_datetime(ymd("2020-04-01")), "Début Carnivore")
+```
+
+```{r readData}
+d <- googlesheets4::read_sheet(ss = "https://docs.google.com/spreadsheets/d/1Lwd509PG4EQZKsku1dxK-Lsw0e_CFmaBRo7K97MPYWE/edit?usp=sharing") %>% 
+  janitor::clean_names()
+```
+
+```{r plotFun}
+plotFun <- function(dp = d,
+                    col,
+                    variable,
+                    t,
+                    lim = 0) {
+  d %>% 
+    ggplot(aes_string(x = "date", y = variable) ) +
+    geom_line(size = 1.5, color = col ) +
+    expand_limits(y = 0 ) +
+    labs(title = t, x = "") +
+    geom_hline(yintercept = lim, lty = 2) +
+    annotate(geom = "text",
+             x = dEvents$date, y = 0,
+             label = dEvents$event,
+             angle = 90, 
+             hjust = 0) +
+    theme_gray()
+}
+```
+
+```{r plotVars, include=TRUE}
+pmap(.l = list(
+               col = varsColors,
+               variable = vars,
+               t = varsTitle,
+               lim =varsLim
+               ),
+     .f = plotFun,
+     dp = d
+)
+```
+
