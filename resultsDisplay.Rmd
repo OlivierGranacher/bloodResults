@@ -16,19 +16,27 @@ library(lubridate, quietly = T)
 # Vars to plot
 vars <- c("ldl_mmol_l",
           "hdl_mmol_l",
-          "tg_mmol_l") 
+          "tg_mmol_l",
+          "gamma_glutamyl_transferase_ggt",
+          "transaminases_sgpt") 
 # Color for each variable
 varsColors <- c("indianred3",
                 "darkred",
-                "indianred")
+                "indianred",
+                "darkblue",
+                "dodgerblue")
 # Limits for vars
 varsLim <- c(3,
              1,
-             2)
+             2,
+             64,
+             55)
 # vars Titles
 varsTitle <- c("LDL en mmol/l",
                "HDL en mmol/l",
-               "TG en mmol/l")
+               "TG en mmol/l",
+               "GGT en ui/l",
+               "Transaminases TGP en ui/l")
 # Events
 dEvents <- tribble( ~ date, ~ event,
                    as_datetime(ymd("2017-04-01")), "Début Keto",
@@ -48,7 +56,8 @@ plotFun <- function(dp = d,
                     lim = 0) {
   d %>% 
     ggplot(aes_string(x = "date", y = variable) ) +
-    geom_line(size = 1.5, color = col ) +
+    geom_line(size = .5, color = col ) +
+    geom_point(color = col, size = 2, shape = 21, fill = "grey") + 
     expand_limits(y = 0 ) +
     labs(title = t, x = "") +
     geom_hline(yintercept = lim, lty = 2) +
