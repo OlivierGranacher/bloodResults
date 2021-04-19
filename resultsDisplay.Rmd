@@ -17,24 +17,29 @@ library(lubridate, quietly = T)
 vars <- c("ldl_mmol_l",
           "hdl_mmol_l",
           "tg_mmol_l",
+          "tg_hdl",
           "gamma_glutamyl_transferase_ggt",
-          "transaminases_sgpt") 
+          "transaminases_sgpt"
+          ) 
 # Color for each variable
 varsColors <- c("indianred3",
                 "darkred",
                 "indianred",
+                "red2",
                 "darkblue",
                 "dodgerblue")
 # Limits for vars
 varsLim <- c(3,
-             1,
-             2,
+             1.55,
+             1.7,
+             0.8,
              64,
              55)
 # vars Titles
 varsTitle <- c("LDL en mmol/l",
                "HDL en mmol/l",
                "TG en mmol/l",
+               "TG/HDL", 
                "GGT en ui/l",
                "Transaminases TGP en ui/l")
 # Events
@@ -45,7 +50,8 @@ dEvents <- tribble( ~ date, ~ event,
 
 ```{r readData}
 d <- googlesheets4::read_sheet(ss = "https://docs.google.com/spreadsheets/d/1Lwd509PG4EQZKsku1dxK-Lsw0e_CFmaBRo7K97MPYWE/edit?usp=sharing") %>% 
-  janitor::clean_names()
+  janitor::clean_names() %>% 
+  mutate(tg_hdl = tg_mmol_l/hdl_mmol_l)
 ```
 
 ```{r plotFun}
@@ -59,19 +65,19 @@ plotFun <- function(dp = d,
     geom_line(size = .5, color = col ) +
     geom_point(color = col, size = 2, shape = 21, fill = "grey") + 
     expand_limits(y = 0 ) +
-    labs(title = t, x = "") +
+    labs(title = t, x = "", y = "") +
     geom_hline(yintercept = lim, lty = 2) +
     annotate(geom = "text",
              x = dEvents$date, y = 0,
              label = dEvents$event,
              angle = 90, 
              hjust = 0) +
-    theme_gray()
+    theme_bw()
 }
 ```
 
-```{r plotVars, include=TRUE}
-pmap(.l = list(
+```{r plotVars, include=TRUE, fig.height= 24}
+lPlot <- pmap(.l = list(
                col = varsColors,
                variable = vars,
                t = varsTitle,
@@ -80,5 +86,8 @@ pmap(.l = list(
      .f = plotFun,
      dp = d
 )
+cowplot::plot_grid(plotlist = lPlot, 
+                   align = "v",
+                   ncol  = 1)
 ```
 
